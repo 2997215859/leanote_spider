@@ -22,7 +22,7 @@ class LoginSpider(scrapy.Spider):
         print 'Preparing login'
         return [FormRequest(url="https://leanote.com/doLogin",
                             meta={'cookiejar': 1},
-                            formdata={'email':'*****','pwd': '******'},                                      headers=self.headers,
+                            formdata={'email':'**','pwd': '**'},                                      headers=self.headers,
                             callback=self.after_login),]
 
     def after_login(self, response):
