@@ -62,11 +62,16 @@ ROBOTSTXT_OBEY = True
 #    'scrapy.extensions.telnet.TelnetConsole': None,
 #}
 
-# Configure item pipelines
+# sqlite configurations
+SQLITE_FILE = 'D:/store/PycharmProjects/django_blog/db.sqlite3'
+SQLITE_TABLE = 'api_note_note'
+
+# Configure item pipelinesSQLITE_TABLE
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'leanote_spider.pipelines.LeanoteSpiderPipeline': 300,
+   'leanote_spider.pipelines.InsertSqlitePipeline': 300,
 }
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

@@ -2,7 +2,7 @@ import scrapy
 import json
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy import Request, FormRequest
-from leanote_spider.items import NotebookItem, NoteItem
+from leanote_spider.items import NoteItem
 
 class LoginSpider(scrapy.Spider):
     name = 'login'
@@ -36,14 +36,16 @@ class LoginSpider(scrapy.Spider):
     def get_notebook(self, response):
         notebookdetails = json.loads(response.body_as_unicode())
         for notebookdetail in notebookdetails:
-            item = NotebookItem(notebookdetail)
             print "access url = " + self.note_url + notebookdetail['NoteId']
             yield Request(self.note_url + notebookdetail['NoteId'],
-                          meta={'cookiejar': response.meta['cookiejar']},
+                          meta={'cookiejar': response.meta['cookiejar'], 'notebookdetail': notebookdetail},
                           headers=self.headers,
                           callback=self.get_note)
 
     def get_note(self, response):
         notedetail = json.loads(response.body_as_unicode())
-        item = NoteItem(notedetail)
+        notebookdetail = response.meta['notebookdetail']
+        item = NoteItem(notebookdetail)
+        item['Content'] = notedetail['Content']
+        item['Abstract'] = notedetail['Abstract']
         return item
