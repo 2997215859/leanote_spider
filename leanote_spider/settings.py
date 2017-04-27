@@ -63,13 +63,21 @@ ROBOTSTXT_OBEY = True
 #}
 
 # sqlite configurations
-SQLITE_FILE = 'D:/store/PycharmProjects/django_blog/db.sqlite3'
-SQLITE_TABLE = 'api_note_note'
+# SQLITE_FILE = 'D:/store/PycharmProjects/django_blog/db.sqlite3'
+# SQLITE_TABLE = 'api_note_note'
+
+# postgresql configrurations
+DATABASE = "leanote"
+USER = "postgres"
+PASSWORD = "123456"
+HOST = "127.0.0.1"
+PORT = "5432"
+TABLENAME = "api_note_note"
 
 # Configure item pipelinesSQLITE_TABLE
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'leanote_spider.pipelines.InsertSqlitePipeline': 300,
+   'leanote_spider.pipelines.InsertSqlPipeline': 300,
 }
 
 

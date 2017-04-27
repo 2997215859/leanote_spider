@@ -6,7 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import json
 import codecs
-import sqlite3
+import psycopg2
 
 class GetCommonJsonFilePipeline(object):
     def __init__(self):
@@ -29,28 +29,65 @@ class GetCommonJsonFilePipeline(object):
         else:
             self.notebook_file.write(line.decode('unicode_escape'))
 
-class InsertSqlitePipeline(object):
-    def __init__(self, sqlite_file, sqlite_table):
-        self.sqlite_file = sqlite_file
-        self.sqlite_table = sqlite_table
+class InsertSqlPipeline(object):
+    # def __init__(self, sqlite_file, sqlite_table):
+    #     self.sqlite_file = sqlite_file
+    #     self.sqlite_table = sqlite_table
+
+    def __init__(self, pg_database, pg_user, pg_password, pg_host, pg_port, pg_tablename):
+        self.pg_database = pg_database
+        self.pg_user = pg_user
+        self.pg_password = pg_password
+        self.pg_host = pg_host
+        self.pg_port = pg_port
+        self.pg_tablename = pg_tablename
+        self.item_key = []
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            sqlite_file = crawler.settings.get('SQLITE_FILE'), # get info from setting.py
-            sqlite_table = crawler.settings.get('SQLITE_TABLE', 'items')
+            # sqlite_file = crawler.settings.get('SQLITE_FILE'), # get info from setting.py
+            # sqlite_table = crawler.settings.get('SQLITE_TABLE', 'items')
+            pg_database = crawler.settings.get('DATABASE'),
+            pg_user = crawler.settings.get('USER'),
+            pg_password = crawler.settings.get('PASSWORD'),
+            pg_host = crawler.settings.get('HOST'),
+            pg_port = crawler.settings.get('PORT'),
+            pg_tablename = crawler.settings.get('TABLENAME')
         )
 
     def open_spider(self, spider):
-        self.conn = sqlite3.connect(self.sqlite_file)
+        self.conn = psycopg2.connect(database=self.pg_database,
+                                     user=self.pg_user,
+                                     password=self.pg_password,
+                                     host=self.pg_host,
+                                     port="5432")
         self.cur = self.conn.cursor()
-
-    def process_item(self, item, spider):
-        item['Tags'] = ",".join(item['Tags'])
-        insert_sql = "insert into {0}({1}) values({2})".format(self.sqlite_table, ','.join(item.keys()), ','.join(['?'] * len(item.keys())))
-        self.cur.execute(insert_sql, item.values())
+        self.cur.execute("SET client_encoding = UTF8;")
         self.conn.commit()
-        return item
 
     def close_spider(self, spider):
         self.conn.close()
+
+    def process_item(self, item, spider):
+
+
+        if len(self.item_key) == 0:
+            for key in item.keys():
+                self.item_key.append('"' + key + '"')
+
+
+
+        insert_sql = "insert into {0}({1}) values({2})".format(self.pg_tablename, ','.join(self.item_key),
+                                                               ','.join(['%s'] * len(item.keys())))
+        # print tuple(item.values())
+        try:
+            self.cur.execute(insert_sql, item.values())
+            self.conn.commit()
+        except Exception, e:
+            print "插入数据失败"
+            print e
+            print "noteId = ", item['NoteId']
+            print "notebookId = ", item['NotebookId']
+        return item
+

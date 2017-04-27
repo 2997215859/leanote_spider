@@ -16,6 +16,14 @@ if __name__ == '__main__':
     notebook_sql = NotebookToSql()
     # notebook_sql.generate_insert_sql("notebook_insert_sql.txt", notebooks, "api_note_note") # 生成sql语句到指定文件
     # notebook_sql.generate_notebook_id("notebook_id.txt", notebooks) # 收集notebookId到数组
-    sqlite_file = "D:/store/PycharmProjects/django_blog/db.sqlite3"
-    sqlite_tablename = "api_note_notebook"
+    # sqlite_file = "D:/store/PycharmProjects/django_blog/db.sqlite3"
+    # sqlite_tablename = "api_note_notebook"
     # notebook_sql.insert_data_sqlite3(sqlite_file, sqlite_tablename, notebooks, False) # 将notebooks数据插入到数据库中
+    notebook_sql.insert_data_postgre({
+        "DATABASE": "leanote",
+        "USER": "postgres",
+        "PASSWORD": "123456",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+        "TABLENAME": "api_note_notebook"
+    }, notebooks, "UTF8")
